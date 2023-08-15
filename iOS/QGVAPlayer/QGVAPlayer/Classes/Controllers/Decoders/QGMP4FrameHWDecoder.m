@@ -445,13 +445,15 @@ NSString *const QGMP4HWDErrorDomain = @"QGMP4HWDErrorDomain";
 
 - (BOOL)createDecompressionSession {
     CFDictionaryRef attrs = NULL;
-    const void *keys[] = {kCVPixelBufferPixelFormatTypeKey};
+    const void *keys[] = {kCVPixelBufferPixelFormatTypeKey,
+        kCVPixelBufferIOSurfacePropertiesKey, kCVPixelBufferOpenGLESCompatibilityKey, kCVPixelBufferMetalCompatibilityKey};
+
     //      kCVPixelFormatType_420YpCbCr8Planar is YUV420
     //      kCVPixelFormatType_420YpCbCr8BiPlanarFullRange is NV12
     uint32_t v = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange;
-    const void *values[] = { CFNumberCreate(NULL, kCFNumberSInt32Type, &v) };
-    attrs = CFDictionaryCreate(NULL, keys, values, 1, NULL, NULL);
-    
+    const void *values[] = { CFNumberCreate(NULL, kCFNumberSInt32Type, &v), CFDictionaryCreate(kCFAllocatorDefault, NULL, NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks), kCFBooleanTrue, kCFBooleanTrue  };
+    attrs = CFDictionaryCreate(NULL, keys, values, 4, NULL, NULL);
+
     if ([UIDevice currentDevice].systemVersion.floatValue >= 9.0) {
         _status = VTDecompressionSessionCreate(kCFAllocatorDefault,
                                                _mFormatDescription,
@@ -468,7 +470,7 @@ NSString *const QGMP4HWDErrorDomain = @"QGMP4HWDErrorDomain";
         VTDecompressionOutputCallbackRecord callBackRecord;
         callBackRecord.decompressionOutputCallback = didDecompress;
         callBackRecord.decompressionOutputRefCon = NULL;
-        
+
         _status = VTDecompressionSessionCreate(kCFAllocatorDefault,
                                                _mFormatDescription,
                                                NULL, attrs,
