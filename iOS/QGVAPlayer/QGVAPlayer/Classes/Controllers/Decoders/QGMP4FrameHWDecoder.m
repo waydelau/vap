@@ -451,7 +451,11 @@ NSString *const QGMP4HWDErrorDomain = @"QGMP4HWDErrorDomain";
     //      kCVPixelFormatType_420YpCbCr8Planar is YUV420
     //      kCVPixelFormatType_420YpCbCr8BiPlanarFullRange is NV12
     uint32_t v = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange;
-    const void *values[] = { CFNumberCreate(NULL, kCFNumberSInt32Type, &v), CFDictionaryCreate(kCFAllocatorDefault, NULL, NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks), kCFBooleanTrue, kCFBooleanTrue  };
+    CFDictionaryRef valuesDict = CFDictionaryCreate(kCFAllocatorDefault, NULL, NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFNumberRef number = CFNumberCreate(NULL, kCFNumberSInt32Type, &v);
+    
+    const void *values[] = { number, valuesDict, kCFBooleanTrue, kCFBooleanTrue  };
+    
     attrs = CFDictionaryCreate(NULL, keys, values, 4, NULL, NULL);
 
     if ([UIDevice currentDevice].systemVersion.floatValue >= 9.0) {
@@ -463,6 +467,8 @@ NSString *const QGMP4HWDErrorDomain = @"QGMP4HWDErrorDomain";
                                                &_mDecodeSession);
         if (_status != noErr) {
             CFRelease(attrs);
+            CFRelease(valuesDict);
+            CFRelease(number);
             _constructErr = [NSError errorWithDomain:QGMP4HWDErrorDomain code:QGMP4HWDErrorCode_ErrorCreateVTBSession userInfo:[self errorUserInfo]];
             return NO;
         }
@@ -478,11 +484,15 @@ NSString *const QGMP4HWDErrorDomain = @"QGMP4HWDErrorDomain";
                                                &_mDecodeSession);
         if (_status != noErr) {
             CFRelease(attrs);
+            CFRelease(valuesDict);
+            CFRelease(number);
             _constructErr = [NSError errorWithDomain:QGMP4HWDErrorDomain code:QGMP4HWDErrorCode_ErrorCreateVTBSession userInfo:[self errorUserInfo]];
             return NO;
         }
     }
     CFRelease(attrs);
+    CFRelease(valuesDict);
+    CFRelease(number);
     return YES;
 }
 
